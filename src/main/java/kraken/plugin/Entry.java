@@ -1,9 +1,6 @@
 package kraken.plugin;
 
-import kraken.plugin.api.Client;
-import kraken.plugin.api.ConVar;
-import kraken.plugin.api.Debug;
-import kraken.plugin.api.PluginContext;
+import kraken.plugin.api.*;
 import kraken.stub.Plugins;
 
 import java.io.ByteArrayOutputStream;
@@ -19,9 +16,9 @@ public class Entry {
     public static boolean onLoaded(PluginContext pluginContext) {
         pluginContext.setName("Local Plugins");
 
-        Debug.log("Loading jars from " + Client.getPluginDir());
+        Debug.log("Loading jars from " + Kraken.getPluginDir());
         try {
-            Plugins.loadJars(Paths.get(Client.getPluginDir()));
+            Plugins.loadJars(Paths.get(Kraken.getPluginDir()));
             Debug.log("Stub loaded!");
         } catch (Throwable e) {
             Debug.printStackTrace("Failed to load jars", e);

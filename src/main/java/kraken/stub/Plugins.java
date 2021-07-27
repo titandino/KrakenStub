@@ -2,6 +2,7 @@ package kraken.stub;
 
 import kraken.plugin.api.Client;
 import kraken.plugin.api.Debug;
+import kraken.plugin.api.Kraken;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -68,7 +69,7 @@ public class Plugins {
                 ins.close();
 
                 Debug.log("Loading plugin at '" + ep + "'");
-                Client.loadNewPlugin(Class.forName(ep));
+                Kraken.loadNewPlugin(Class.forName(ep));
             }
         }
     }
