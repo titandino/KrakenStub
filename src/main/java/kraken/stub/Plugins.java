@@ -58,7 +58,6 @@ public class Plugins {
         Enumeration<JarEntry> je = jf.entries();
         while (je.hasMoreElements()) {
             JarEntry entry = je.nextElement();
-            Debug.log(entry.getName());
             if (entry.getName().equals("plugin.ini")) {
                 InputStream ins = jf.getInputStream(entry);
                 String ep = new String(toByteArray(ins))
