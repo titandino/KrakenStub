@@ -2,6 +2,8 @@ package kraken.stub;
 
 import kraken.plugin.api.*;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static kraken.plugin.api.Actions.MENU_EXECUTE_NPC1;
 import static kraken.plugin.api.Client.MINING;
 import static kraken.plugin.api.Player.ADRENALINE;
@@ -99,9 +101,23 @@ public class ExamplePlugin extends AbstractPlugin {
             }
         }
 
+        AtomicInteger playerForEachChecksum = new AtomicInteger();
+        Players.forEach((plr) -> {
+            playerForEachChecksum.incrementAndGet();
+        });
+        ImGui.label("Players#forEach= " + playerForEachChecksum);
+        ImGui.label("Players#all= " + Players.all().length);
+
+        AtomicInteger npcForEachChecksum = new AtomicInteger();
+        Npcs.forEach((npc) -> {
+            npcForEachChecksum.incrementAndGet();
+        });
+        ImGui.label("Npcs#forEach= " + npcForEachChecksum);
+        ImGui.label("Npcs#all= " + Npcs.all().length);
+
         Npc firstNpc = Npcs.closest((npc) -> npc.getName() != null && !npc.getName().isEmpty());
         if (firstNpc != null) {
-            ImGui.label("Npc");
+            ImGui.label("Npcs#closest");
             ImGui.label(" -> Name= " + firstNpc.getName());
             ImGui.label(" -> Id= " + firstNpc.getId());
             ImGui.label(" -> Animation= " + firstNpc.getAnimationId());
@@ -126,6 +142,12 @@ public class ExamplePlugin extends AbstractPlugin {
             ImGui.label(" -> ScenePos= " + firstObj.getScenePosition());
         }
 
+        AtomicInteger objectForEachChecksum = new AtomicInteger();
+        SceneObjects.forEach((plr) -> {
+            objectForEachChecksum.incrementAndGet();
+        });
+        ImGui.label("SceneObjectsforEach= " + objectForEachChecksum);
+
         GroundItem firstGround = GroundItems.closest((obj) -> true);
         if (firstGround != null) {
             ImGui.label("GroundItem");
@@ -141,6 +163,13 @@ public class ExamplePlugin extends AbstractPlugin {
             ImGui.label(" -> GlobalPos= " + effect.getGlobalPosition());
             ImGui.label(" -> ScenePos= " + effect.getScenePosition());
         }
+
+        AtomicInteger effectForEachChecksum = new AtomicInteger();
+        Effects.forEach((plr) -> {
+            effectForEachChecksum.incrementAndGet();
+        });
+        ImGui.label("Effects#forEach= " + effectForEachChecksum);
+        ImGui.label("Effects#all= " + Effects.all().length);
 
         WidgetGroup bankWidget = Widgets.getGroupById(517);
         if (bankWidget != null) {
