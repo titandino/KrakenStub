@@ -146,7 +146,7 @@ public class ExamplePlugin extends AbstractPlugin {
         SceneObjects.forEach((plr) -> {
             objectForEachChecksum.incrementAndGet();
         });
-        ImGui.label("SceneObjectsforEach= " + objectForEachChecksum);
+        ImGui.label("SceneObjects#forEach= " + objectForEachChecksum);
 
         GroundItem firstGround = GroundItems.closest((obj) -> true);
         if (firstGround != null) {
