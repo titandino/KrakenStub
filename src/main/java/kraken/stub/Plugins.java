@@ -7,8 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
@@ -51,8 +49,6 @@ public class Plugins {
 
         Map<String, byte[]> typeDefinitions = new HashMap<>();
         
-        URLClassLoader classLoader = new URLClassLoader(new URL[] { file.toURI().toURL() });
-
         JarFile jf = new JarFile(file);
         Enumeration<JarEntry> je = jf.entries();
         String ep = null;
@@ -79,13 +75,12 @@ public class Plugins {
         if (ep == null) {
             Debug.log("Failed to find entry-point for jar " + path);
             jf.close();
-            classLoader.close();
             return;
         }
 
         Debug.log("Loading plugin at @ '" + ep + "'");
-        Kraken.loadNewPlugin(classLoader.loadClass(ep));
-        classLoader.close();
+        ByteArrayClassLoader bcl = new ByteArrayClassLoader(ClassLoader.getSystemClassLoader(), typeDefinitions);
+        Kraken.loadNewPlugin(bcl.loadClass(ep));
         jf.close();
     }
 
