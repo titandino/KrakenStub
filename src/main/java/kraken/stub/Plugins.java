@@ -7,8 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
@@ -48,7 +46,6 @@ public class Plugins {
      */
     public static void loadJar(Path path) throws Exception {
         File file = path.toFile();
-        URLClassLoader cl = URLClassLoader.newInstance(new URL[] { file.toURI().toURL() });
 
         Map<String, byte[]> typeDefinitions = new HashMap<>();
 
@@ -82,7 +79,8 @@ public class Plugins {
         }
 
         Debug.log("Loading plugin at @ '" + ep + "'");
-        Kraken.loadNewPlugin(cl.loadClass(ep));
+        ByteArrayClassLoader bcl = new ByteArrayClassLoader(ClassLoader.getSystemClassLoader(), typeDefinitions);
+        Kraken.loadNewPlugin(bcl.loadClass(ep));
         jf.close();
     }
 
