@@ -14,6 +14,8 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -50,28 +52,38 @@ public class Plugins {
         File file = path.toFile();
         URL url = file.toURI().toURL();
 
-        URLClassLoader classLoader = (URLClassLoader)ClassLoader.getSystemClassLoader();
-        Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-        method.setAccessible(true);
-        method.invoke(classLoader, url);
+        Map<String, byte[]> typeDefinitions = new HashMap<>();
 
         JarFile jf = new JarFile(file);
         Enumeration<JarEntry> je = jf.entries();
+        String ep = null;
         while (je.hasMoreElements()) {
             JarEntry entry = je.nextElement();
+            InputStream ins = jf.getInputStream(entry);
+            byte[] b = toByteArray(ins);
+            ins.close();
+
             if (entry.getName().equals("plugin.ini")) {
-                InputStream ins = jf.getInputStream(entry);
-                String ep = new String(toByteArray(ins))
+                ep = new String(b)
                         .replace("\n", "")
                         .replace("\r", "")
                         .trim();
 
-                ins.close();
+            }
 
-                Debug.log("Loading plugin at '" + ep + "'");
-                Kraken.loadNewPlugin(Class.forName(ep));
+            if (entry.getName().endsWith(".class")) {
+                typeDefinitions.put(entry.getName().replace('/', '.').replace(".class", ""), b);
             }
         }
+
+        if (ep == null) {
+            Debug.log("Failed to find entry-point for jar " + path);
+            return;
+        }
+
+        Debug.log("Loading plugin at @ '" + ep + "'");
+        ByteArrayClassLoader bcl = new ByteArrayClassLoader(ClassLoader.getSystemClassLoader(), typeDefinitions);
+        Kraken.loadNewPlugin(bcl.loadClass(ep));
     }
 
     /**
