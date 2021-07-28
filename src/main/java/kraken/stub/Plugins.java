@@ -1,6 +1,5 @@
 package kraken.stub;
 
-import kraken.plugin.api.Client;
 import kraken.plugin.api.Debug;
 import kraken.plugin.api.Kraken;
 
@@ -8,7 +7,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -50,7 +48,7 @@ public class Plugins {
      */
     public static void loadJar(Path path) throws Exception {
         File file = path.toFile();
-        URL url = file.toURI().toURL();
+        URLClassLoader cl = URLClassLoader.newInstance(new URL[] { file.toURI().toURL() });
 
         Map<String, byte[]> typeDefinitions = new HashMap<>();
 
@@ -70,20 +68,22 @@ public class Plugins {
                         .trim();
 
             }
-
+            
             if (entry.getName().endsWith(".class")) {
-                typeDefinitions.put(entry.getName().replace('/', '.').replace(".class", ""), b);
+            	String className = entry.getName().replace('/', '.').replace(".class", "");
+                typeDefinitions.put(className, b);
             }
         }
 
         if (ep == null) {
             Debug.log("Failed to find entry-point for jar " + path);
+            jf.close();
             return;
         }
 
         Debug.log("Loading plugin at @ '" + ep + "'");
-        ByteArrayClassLoader bcl = new ByteArrayClassLoader(ClassLoader.getSystemClassLoader(), typeDefinitions);
-        Kraken.loadNewPlugin(bcl.loadClass(ep));
+        Kraken.loadNewPlugin(cl.loadClass(ep));
+        jf.close();
     }
 
     /**

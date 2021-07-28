@@ -1,12 +1,9 @@
 package kraken.plugin;
 
 import kraken.plugin.api.*;
-import kraken.stub.ExamplePlugin;
 import kraken.stub.ExamplePluginEntry;
 import kraken.stub.Plugins;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.nio.file.Paths;
 
 /**

@@ -1,2 +1,4 @@
 rootProject.name = 'KrakenStub'
+include ':KrakenAPI'
 
+project(':KrakenAPI').projectDir = new File("../KrakenAPI")
