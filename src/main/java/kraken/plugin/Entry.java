@@ -1,6 +1,7 @@
 package kraken.plugin;
 
 import kraken.plugin.api.*;
+import kraken.stub.BasePluginEntry;
 import kraken.stub.ExamplePluginEntry;
 import kraken.stub.Plugins;
 
@@ -18,6 +19,7 @@ public class Entry {
         // load example plugin first
         // we use this to test API functionality
         Kraken.loadNewPlugin(ExamplePluginEntry.class);
+        Kraken.loadNewPlugin(BasePluginEntry.class);
 
         Debug.log("Loading jars from " + Kraken.getPluginDir());
         try {
