@@ -1,11 +1,13 @@
 package kraken.plugin;
 
-import kraken.plugin.api.*;
+import java.nio.file.Paths;
+
+import kraken.plugin.api.Debug;
+import kraken.plugin.api.Kraken;
+import kraken.plugin.api.Plugin;
+import kraken.plugin.api.PluginContext;
 import kraken.stub.ExamplePlugin;
 import kraken.stub.Plugins;
-
-import java.nio.file.Paths;
-import java.util.List;
 
 public class Entry extends Plugin {
 

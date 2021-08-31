@@ -1,13 +1,44 @@
 package kraken.stub;
 
-import kraken.plugin.api.*;
+import static kraken.plugin.api.Actions.MENU_EXECUTE_NPC1;
+import static kraken.plugin.api.Client.MINING;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static kraken.plugin.api.Actions.MENU_EXECUTE_NPC1;
-import static kraken.plugin.api.Client.MINING;
-import static kraken.plugin.api.Player.ADRENALINE;
+import kraken.plugin.api.Actions;
+import kraken.plugin.api.Bank;
+import kraken.plugin.api.Cache;
+import kraken.plugin.api.CacheItem;
+import kraken.plugin.api.CacheNpc;
+import kraken.plugin.api.CacheObject;
+import kraken.plugin.api.Client;
+import kraken.plugin.api.ConVar;
+import kraken.plugin.api.Debug;
+import kraken.plugin.api.Dialogue;
+import kraken.plugin.api.Effect;
+import kraken.plugin.api.Effects;
+import kraken.plugin.api.Entity;
+import kraken.plugin.api.EquipmentSlot;
+import kraken.plugin.api.GroundItem;
+import kraken.plugin.api.GroundItems;
+import kraken.plugin.api.ImGui;
+import kraken.plugin.api.Inventory;
+import kraken.plugin.api.Item;
+import kraken.plugin.api.Kraken;
+import kraken.plugin.api.Npc;
+import kraken.plugin.api.Npcs;
+import kraken.plugin.api.Player;
+import kraken.plugin.api.Players;
+import kraken.plugin.api.Plugin;
+import kraken.plugin.api.PluginContext;
+import kraken.plugin.api.SceneObject;
+import kraken.plugin.api.SceneObjects;
+import kraken.plugin.api.Vector2i;
+import kraken.plugin.api.Widget;
+import kraken.plugin.api.WidgetGroup;
+import kraken.plugin.api.WidgetItem;
+import kraken.plugin.api.Widgets;
 
 /**
  * An example plugin.

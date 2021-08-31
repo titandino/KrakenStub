@@ -1,22 +1,18 @@
 package kraken.stub;
 
-import kraken.plugin.api.Client;
-import kraken.plugin.api.Debug;
-import kraken.plugin.api.Kraken;
-
-import java.io.*;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import kraken.plugin.api.Debug;
+import kraken.plugin.api.Kraken;
 
 /**
  * Provides plugin loading utilities.
