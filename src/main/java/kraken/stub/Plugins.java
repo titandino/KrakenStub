@@ -1,12 +1,11 @@
 package kraken.stub;
 
+import kraken.plugin.api.Client;
 import kraken.plugin.api.Debug;
 import kraken.plugin.api.Kraken;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -16,6 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Provides plugin loading utilities.
@@ -34,6 +35,40 @@ public class Plugins {
         return bos.toByteArray();
     }
 
+    private static void loadJar(byte[] bytes) throws IOException, ClassNotFoundException {
+        ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bytes));
+        ZipEntry ze;
+
+        String ep = null;
+        Map<String, byte[]> typeDefinitions = new HashMap<>();
+        while ((ze = zis.getNextEntry()) != null) {
+            byte[] b = toByteArray(zis);
+
+            if (ze.getName().equals("plugin.ini")) {
+                ep = new String(b)
+                        .replace("\n", "")
+                        .replace("\r", "")
+                        .trim();
+
+            }
+
+            if (ze.getName().endsWith(".class")) {
+                typeDefinitions.put(ze.getName().replace('/', '.').replace(".class", ""), b);
+            }
+
+            zis.closeEntry();
+        }
+
+        if (ep == null) {
+            Debug.log("Failed to find entry-point for jar");
+            return;
+        }
+
+        Debug.log("Loading plugin at @ '" + ep + "'");
+        ByteArrayClassLoader bcl = new ByteArrayClassLoader(ClassLoader.getSystemClassLoader(), typeDefinitions);
+        Kraken.loadNewPlugin(bcl.loadClass(ep));
+    }
+
     /**
      * Loads a jar into the current classpath. We have limited control here over
      * security options, etc. but this does not matter as we will provide our
@@ -47,46 +82,7 @@ public class Plugins {
      * @throws Exception If any exceptions occur during loading.
      */
     public static void loadJar(Path path) throws Exception {
-        File file = path.toFile();
-
-        Map<String, byte[]> typeDefinitions = new HashMap<>();
-        
-        URLClassLoader classLoader = new URLClassLoader(new URL[] { file.toURI().toURL() });
-
-        JarFile jf = new JarFile(file);
-        Enumeration<JarEntry> je = jf.entries();
-        String ep = null;
-        while (je.hasMoreElements()) {
-            JarEntry entry = je.nextElement();
-            InputStream ins = jf.getInputStream(entry);
-            byte[] b = toByteArray(ins);
-            ins.close();
-
-            if (entry.getName().equals("plugin.ini")) {
-                ep = new String(b)
-                        .replace("\n", "")
-                        .replace("\r", "")
-                        .trim();
-
-            }
-            
-            if (entry.getName().endsWith(".class")) {
-            	String className = entry.getName().replace('/', '.').replace(".class", "");
-                typeDefinitions.put(className, b);
-            }
-        }
-
-        if (ep == null) {
-            Debug.log("Failed to find entry-point for jar " + path);
-            jf.close();
-            classLoader.close();
-            return;
-        }
-
-        Debug.log("Loading plugin at @ '" + ep + "'");
-        Kraken.loadNewPlugin(classLoader.loadClass(ep));
-        classLoader.close();
-        jf.close();
+        loadJar(Files.readAllBytes(path));
     }
 
     /**

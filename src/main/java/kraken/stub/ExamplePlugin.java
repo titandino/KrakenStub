@@ -2,6 +2,7 @@ package kraken.stub;
 
 import kraken.plugin.api.*;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static kraken.plugin.api.Actions.MENU_EXECUTE_NPC1;
@@ -11,12 +12,14 @@ import static kraken.plugin.api.Player.ADRENALINE;
 /**
  * An example plugin.
  */
-public class ExamplePlugin extends AbstractPlugin {
+public class ExamplePlugin extends Plugin {
 
     private boolean testWithdrawing = false;
     private boolean testDepositing = false;
     private boolean testNpcInteract = false;
-    
+    private boolean testBankInteract = false;
+    private boolean testLogout = false;
+
     @Override
     public boolean onLoaded(PluginContext pluginContext) {
         pluginContext.setName("Example");
@@ -40,6 +43,19 @@ public class ExamplePlugin extends AbstractPlugin {
             if (firstNpc != null) {
                 Actions.menu(MENU_EXECUTE_NPC1, firstNpc.getServerIndex(), 0, 0, 1);
             }
+        }
+
+        if (testBankInteract) {
+            SceneObject bank = SceneObjects.closest((obj) -> obj.getName().equalsIgnoreCase("Bank booth"));
+            if (bank != null) {
+                bank.interact("Examine");
+                bank.interact("Bank");
+            }
+        }
+
+        if (testLogout) {
+            Client.logout();
+            testLogout = false;
         }
 
         return 8000;
@@ -67,23 +83,55 @@ public class ExamplePlugin extends AbstractPlugin {
         }
     }
 
-    @Override
-    public void onPaint() {
-        testWithdrawing = ImGui.checkbox("Test Withdrawing", testWithdrawing);
-        testDepositing = ImGui.checkbox("Test Depositing", testDepositing);
-        testNpcInteract = ImGui.checkbox("Test NPC Interact", testNpcInteract);
-
+    private void paintControls() {
         ImGui.checkbox("Checkbox", true);
         ImGui.label("Label");
         ImGui.intSlider("Int Slider", 37, 1, 100);
         ImGui.intInput("Int Input", 40);
         ImGui.button("Button");
+    }
 
+    private void paintCache() {
+        CacheItem cacheItem = Cache.getItem(4151);
+        ImGui.label("CacheItem= " + cacheItem.getId() + " " + cacheItem.getName() + " " + Long.toHexString(cacheItem.getAddress()));
+        for (String option : cacheItem.getOptionNames()) {
+            ImGui.label("  -> " + option);
+        }
+
+        CacheNpc cacheNpc = Cache.getNpc(19501);
+        ImGui.label("CacheNpc= " + cacheNpc.getId() + " " + cacheNpc.getName() + " " + Long.toHexString(cacheNpc.getAddress()));
+        for (String option : cacheNpc.getOptionNames()) {
+            ImGui.label("  -> " + option);
+        }
+
+        CacheObject cacheObject = Cache.getObject(451);
+        ImGui.label("CacheObject= " + cacheObject.getId() + " " + cacheObject.getName() + " " + Long.toHexString(cacheObject.getAddress()));
+        for (String option : cacheObject.getOptionNames()) {
+            ImGui.label("  -> " + option);
+        }
+
+        int[] mageIds = {
+                2753, 2754, 2755
+        };
+
+        for (int mageId : mageIds) {
+            CacheNpc mage = Cache.getNpc(mageId);
+            ImGui.label("VarbitTest= " + mage.getId() + " " + mage.getName() + " " + Long.toHexString(mage.getAddress()));
+            for (String option : mage.getOptionNames()) {
+                ImGui.label("  -> " + option);
+            }
+        }
+    }
+
+    private void paintClient() {
         ImGui.label("State= " + Client.getState());
         ImGui.label("Loading= " + Client.isLoading());
         ImGui.label("ConVar= " + Client.getConVarById(3913));
         ImGui.label("Mining= " + Client.getStatById(MINING));
+        ImGui.label("Restarts= " + Kraken.getRestartCount());
+    }
 
+    private void paintSelf() {
         Player self = Players.self();
         if (self != null) {
             ImGui.label("Self");
@@ -92,22 +140,33 @@ public class ExamplePlugin extends AbstractPlugin {
             ImGui.label(" -> Moving= " + self.isMoving());
             ImGui.label(" -> GlobalPos= " + self.getGlobalPosition());
             ImGui.label(" -> ScenePos= " + self.getScenePosition());
-            ImGui.label(" -> Adrenaline= " + self.getStatusBarFill(ADRENALINE));
+            ImGui.label(" -> Status= " + self.getStatusBarFill());
             ImGui.label(" -> DirOff= " + self.getDirectionOffset());
 
             Entity interacting = self.getInteracting();
             if (interacting != null) {
                 ImGui.label(" -> Interacting= " + interacting.getName());
             }
-        }
 
+            Map<EquipmentSlot, Item> equipment = self.getEquipment();
+            for (EquipmentSlot slot : equipment.keySet()) {
+                if (equipment.get(slot).getId() != -1) {
+                    ImGui.label(" -> Equipment= " + slot + " " + equipment.get(slot).getId() + " " + equipment.get(slot).getName());
+                }
+            }
+        }
+    }
+
+    private void paintPlayers() {
         AtomicInteger playerForEachChecksum = new AtomicInteger();
         Players.forEach((plr) -> {
             playerForEachChecksum.incrementAndGet();
         });
         ImGui.label("Players#forEach= " + playerForEachChecksum);
         ImGui.label("Players#all= " + Players.all().length);
+    }
 
+    private void paintNpcs() {
         AtomicInteger npcForEachChecksum = new AtomicInteger();
         Npcs.forEach((npc) -> {
             npcForEachChecksum.incrementAndGet();
@@ -132,7 +191,9 @@ public class ExamplePlugin extends AbstractPlugin {
                 ImGui.label(" -> Interacting= " + interacting.getName());
             }
         }
+    }
 
+    private void paintObjects() {
         SceneObject firstObj = SceneObjects.closest((obj) -> obj.getName() != null && !obj.getName().isEmpty());
         if (firstObj != null) {
             ImGui.label("Obj");
@@ -147,7 +208,9 @@ public class ExamplePlugin extends AbstractPlugin {
             objectForEachChecksum.incrementAndGet();
         });
         ImGui.label("SceneObjects#forEach= " + objectForEachChecksum);
+    }
 
+    private void paintGroundItems() {
         GroundItem firstGround = GroundItems.closest((obj) -> true);
         if (firstGround != null) {
             ImGui.label("GroundItem");
@@ -155,7 +218,9 @@ public class ExamplePlugin extends AbstractPlugin {
             ImGui.label(" -> GlobalPos= " + firstGround.getGlobalPosition());
             ImGui.label(" -> ScenePos= " + firstGround.getScenePosition());
         }
+    }
 
+    private void paintEffects() {
         Effect effect = Effects.closest((obj) -> true);
         if (effect != null) {
             ImGui.label("Effect");
@@ -170,7 +235,9 @@ public class ExamplePlugin extends AbstractPlugin {
         });
         ImGui.label("Effects#forEach= " + effectForEachChecksum);
         ImGui.label("Effects#all= " + Effects.all().length);
+    }
 
+    private void paintWidgets() {
         WidgetGroup bankWidget = Widgets.getGroupById(517);
         if (bankWidget != null) {
             ImGui.label("Bank");
@@ -187,6 +254,81 @@ public class ExamplePlugin extends AbstractPlugin {
         ImGui.label("Inventory");
         for (WidgetItem item : Inventory.getItems()) {
             ImGui.label(" -> " + item);
+        }
+    }
+
+    private void paintDialogue() {
+        ImGui.label("Dialogue");
+        for (String s : Dialogue.getOptions()) {
+            ImGui.label(" -> " + s);
+        }
+    }
+
+    @Override
+    public void onPaint() {
+        if (ImGui.beginTabBar("TestTabs")) {
+            if (ImGui.beginTabItem("Controls")) {
+                testWithdrawing = ImGui.checkbox("Test Withdrawing", testWithdrawing);
+                testDepositing = ImGui.checkbox("Test Depositing", testDepositing);
+                testNpcInteract = ImGui.checkbox("Test NPC Interact", testNpcInteract);
+                testBankInteract = ImGui.checkbox("Test Bank Interact", testBankInteract);
+                testLogout = ImGui.checkbox("Test Logout", testLogout);
+
+                paintControls();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Cache")) {
+                paintCache();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Client")) {
+                paintClient();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Self")) {
+                paintSelf();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Players")) {
+                paintPlayers();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("NPCs")) {
+                paintNpcs();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Objects")) {
+                paintObjects();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Ground Items")) {
+                paintGroundItems();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Effects")) {
+                paintEffects();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Widgets")) {
+                paintWidgets();
+                ImGui.endTabItem();
+            }
+
+            if (ImGui.beginTabItem("Dialogue")) {
+                paintDialogue();
+                ImGui.endTabItem();
+            }
+
+            ImGui.endTabBar();
         }
     }
 
@@ -212,5 +354,10 @@ public class ExamplePlugin extends AbstractPlugin {
     @Override
     public void onWidgetVisibilityChanged(int id, boolean visible) {
         Debug.log("Widget visibility changed! " + id + " " + visible);
+    }
+
+    @Override
+    public void onInventoryItemChanged(WidgetItem prev, WidgetItem next) {
+        Debug.log("Inventory item changed! " + prev + " " + next);
     }
 }
